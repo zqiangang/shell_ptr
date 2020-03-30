@@ -4,12 +4,6 @@
 #include <exception>
 namespace shell_pointer
 {
-	class null_pointer_access : public std::exception
-	{
-	public:
-		using std::exception::exception;
-	};
-
 	template <typename T,typename = std::void_t<>>
 	struct has_is_modified : std::false_type
 	{
@@ -20,7 +14,8 @@ namespace shell_pointer
 		: std::true_type
 	{
 	};
-	// 重载 shell_sync 可以获得更好的性能
+	
+	// 重载 shell_sync,适配特定类的修改和同步操作
 	template <typename T>
 	void shell_sync(T* master, T* slave)
 	{

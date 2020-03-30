@@ -21,9 +21,7 @@ namespace shell_pointer
 		object const& operator*()const;
 		object& operator*();
 
-		// 另立门户
 		void alone();
-		// 析构函数
 		~shell_ptr();
 	private:
 		void cctor(shell_ptr<object, true> const& sp);
@@ -31,6 +29,7 @@ namespace shell_pointer
 	private:
 		using _shell_base<object, true>::_block;
 	};
+	
 	// 拷贝构造函数，放到派生类定义和声明
 	template <typename object>
 	shell_ptr<object, true>::shell_ptr(shell_ptr<object, true> const& sp)
@@ -38,6 +37,7 @@ namespace shell_pointer
 		cctor(sp);
 	}
 
+	// 可以装换类型的拷贝构造函数,添加引用
 	template <typename object>
 	template <typename cvt_object,typename>
 	shell_ptr<object, true>::shell_ptr(shell_ptr<cvt_object, true> const& sp)
@@ -45,13 +45,15 @@ namespace shell_pointer
 		cctor(sp);
 	}
 
-
+	// 对数据资源进行 const 访问
 	template <typename object>
 	object const* shell_ptr<object, true>::operator->()const
 	{
 		return _block->core_object;
 	}
 
+	// 检查上次操作是否修改,并做出响应的操作
+	// 对资源进行 non const 访问
 	template <typename object>
 	object* shell_ptr<object, true>::operator->()
 	{
@@ -74,12 +76,15 @@ namespace shell_pointer
 		// 返回自身当前数据区的主数据区
 		return _block->core_object;
 	}
+	
+	// 获取数据资源的 const 访问
 	template <typename object>
 	object const& shell_ptr<object, true>::operator*()const
 	{
 		return *operator->();
 	}
 
+	// 获取数据资源的 non const 访问
 	template <typename object>
 	object& shell_ptr<object, true>::operator*()
 	{
@@ -97,7 +102,11 @@ namespace shell_pointer
 		// 创建自己的数据区
 		_block = new core_block<object, true>(clone_core);
 	}
+	
 	// 派生类析构资源
+	// 基类不对资源进行析构,由于数据块的析构操作不相同
+	// 所以析构操作,由派生类根据所实例化的数据块类型
+	// 编写自己的析构方法
 	template <typename object>
 	shell_ptr<object, true>::~shell_ptr()
 	{
@@ -111,13 +120,14 @@ namespace shell_pointer
 		// 首先检查,当前持有的数据区是否为空
 		if (_block == nullptr)
 			return;
+		// 如果当前数据块仅自己持有,则析构
 		if (this->unique())
 		{
 			delete _block;
 			_block = nullptr;
 			return;
 		}
-
+		// 否则,减少对数据块的引用
 		_block->dereference();
 		// 然后,检查当前引用数量是否多于1个
 	#ifndef NON_DISCARD_SLAVE_WHEN_REFERENCE_UNIQUE
@@ -128,7 +138,8 @@ namespace shell_pointer
 		}
 	#endif
 	}
-
+	
+	// 专属的拷贝构造函数辅助函数
 	template <typename object>
 	void shell_ptr<object, true>::cctor(shell_ptr<object, true> const& sp)
 	{

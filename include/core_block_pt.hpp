@@ -15,18 +15,18 @@ namespace shell_pointer
 		core_block(args_t&& ... args_v);
 		~core_block();
 
-		void create_slave();				// 创建从对象
-		bool is_modified();					// 是否修改
-		void notify();						// 通知 shell_ptr 当前数据去已被修改
-		void sync();						// 同步从数据区到主数据区
-		void reference();					// 引用+1
-		void dereference();					// 引用-1
-		void post(shell_ptr<core>*);		// 注册访问对象
+		void create_slave();				
+		bool is_modified();					
+		void notify();						
+		void sync();						
+		void reference();					
+		void dereference();					
+		void post(shell_ptr<core>*);		
 
-		std::size_t reference_count;		// 引用计数
-		core* core_object;				// 优先修改 主数据去
-		core* slave_object;					// 从数据去，用于恢复主数据去的修改
-		shell_ptr<core>* last_access_object;// 最近一次访问对象
+		std::size_t reference_count;		
+		core* core_object;				
+		core* slave_object;					
+		shell_ptr<core>* last_access_object;
 	};
 
 	// 默认构造
@@ -62,42 +62,50 @@ namespace shell_pointer
 		delete slave_object;
 	}
 
+	// 创建备份区
 	template <typename core>
 	void core_block<core,true>::create_slave()
 	{
 		slave_object = new core(*core_object);
 	}
-
+	
+	// 上次操作是否修改对象
 	template <typename core>
 	bool core_block<core,true>::is_modified()
 	{
 		return core_object->is_modified();
 	}
 
+	// 通知最近一次操作的对象进行独立操作
 	template <typename core>
 	void core_block<core,true>::notify()
 	{
 		last_access_object->alone();
 	}
-
+	
+	// 同步操作,同步备份区到主数据区
+	// 重载shell_sync函数,可以获得更好的性能
 	template <typename core>
 	void core_block<core,true>::sync()
 	{
 		shell_pointer::shell_sync(core_object, slave_object);
 	}
 
+	// 注册访问对象
 	template <typename core>
 	void core_block<core,true>::post(shell_ptr<core>* s_ptr)
 	{
 		last_access_object = s_ptr;
 	}
 
+	// 引用 +1
 	template <typename core>
 	void core_block<core,true>::reference()
 	{
 		reference_count += 1;
 	}
 
+	// 引用 -1
 	template <typename core>
 	void core_block<core,true>::dereference()
 	{

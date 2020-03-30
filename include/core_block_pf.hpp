@@ -3,6 +3,7 @@
 #include "shell_fwd.hpp"
 namespace shell_pointer
 {
+	// 数据块类,当类型不包含 is_modified 方法时,实例化
 	template <typename core>
 	struct core_block<core, false>
 	{
@@ -11,8 +12,8 @@ namespace shell_pointer
 		template <typename ... args_t>
 		core_block(args_t&& ... args_v);
 		~core_block();
-		void reference();					// 引用+1
-		void dereference();					// 引用-1
+		void reference();					
+		void dereference();					
 
 		core* core_object;
 		std::size_t reference_count;
@@ -46,14 +47,16 @@ namespace shell_pointer
 		delete core_object;
 	}
 
+	// 引用+1
 	template <typename core>
-	void core_block<core, false>::reference()					// 引用+1
+	void core_block<core, false>::reference()					
 	{
 		reference_count += 1;
 	}
-
+	
+	// 引用-1
 	template <typename core>
-	void core_block<core, false>::dereference()					// 引用-1
+	void core_block<core, false>::dereference()					
 	{
 		reference_count -= 1;
 	}

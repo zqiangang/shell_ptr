@@ -24,12 +24,14 @@ namespace shell_pointer
 		using _shell_base<object, false>::_block;
 	};
 
+	// 拷贝构造函数
 	template <typename object>
 	shell_ptr<object, false>::shell_ptr(shell_ptr<object, false> const& sp)
 	{
 		cctor(sp);
 	}
-
+	
+	// 拷贝构造函数,可转换类型的
 	template <typename object>
 	template <typename cvt_object, typename>
 	shell_ptr<object, false>::shell_ptr(shell_ptr<cvt_object, false> const& sp)
@@ -37,19 +39,22 @@ namespace shell_pointer
 		cctor(sp);
 	}
 
-
+	// 析构函数
+	// 调用自己专属的辅助析构函数
 	template <typename object>
 	shell_ptr<object, false>::~shell_ptr()
 	{
 		dtor();
 	}
 
+	// 专属析构辅助函数
 	template <typename object>
 	void shell_ptr<object, false>::dtor()
 	{
 		// 首先检查,当前持有的数据区是否为空
 		if (_block == nullptr)
 			return;
+		// 如果当前数据块仅自己持有,则析构
 		if (this->unique())
 		{
 			delete _block;
@@ -59,6 +64,7 @@ namespace shell_pointer
 		_block->dereference();
 	}
 
+	// 专属的拷贝构造函数辅助函数
 	template <typename object>
 	void shell_ptr<object, false>::cctor(shell_ptr<object, false> const& sp)
 	{
